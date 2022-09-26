@@ -65,7 +65,7 @@ if ($.isNode()) {
       
       } else {
         if (!isLoginInfo[$.UserName]) {
-          await TotalBean();
+          //await TotalBean();
           isLoginInfo[$.UserName] = $.isLogin
         }
       }
@@ -92,7 +92,7 @@ if ($.isNode()) {
       
       } else {
         if (!isLoginInfo[$.UserName]) {
-          await TotalBean();
+          //await TotalBean();
           isLoginInfo[$.UserName] = $.isLogin
         }
       }
@@ -201,10 +201,13 @@ async function main(help = true) {
 
 // 查询信息
 function signhb(type = 1) {
-  let body = '';
-  if ($.signhb_source === '5') body = `type=0&signhb_source=${$.signhb_source}&smp=&ispp=1&tk=`
+  let functionId = 'signhb/query', body = '';
+  if ($.signhb_source === '5') {
+    functionId = 'signhb/query_jxpp'
+    body = `type=0&signhb_source=${$.signhb_source}&smp=&ispp=1&tk=`
+  }
   return new Promise((resolve) => {
-    $.get(taskUrl("signhb/query", body), async (err, resp, data) => {
+    $.get(taskUrl(functionId, body), async (err, resp, data) => {
       try {
         if (err) {
           console.log(JSON.stringify(err));
@@ -285,8 +288,16 @@ function signhb(type = 1) {
 
 // 签到 助力
 function helpSignhb(smp = '') {
+  let functionId, body;
+  if ($.signhb_source === '5') {
+    functionId = 'signhb/query_jxpp'
+    body = `type=1&signhb_source=${$.signhb_source}&smp=&ispp=1&tk=`
+  } else {
+    functionId = 'signhb/query'
+    body = `type=1&signhb_source=${$.signhb_source}&smp=${smp}&ispp=0&tk=`
+  }
   return new Promise((resolve) => {
-    $.get(taskUrl("signhb/query", `type=1&signhb_source=${$.signhb_source}&smp=${smp}&ispp=1&tk=`), async (err, resp, data) => {
+    $.get(taskUrl(functionId, body), async (err, resp, data) => {
       try {
         if (err) {
           console.log(JSON.stringify(err))
@@ -319,14 +330,16 @@ function helpSignhb(smp = '') {
 
 // 任务
 function dotask(task) {
-  let body;
+  let functionId, body;
   if ($.signhb_source === '5') {
+    functionId = 'signhb/dotask_jxpp'
     body = `task=${task}&signhb_source=${$.signhb_source}&ispp=1&sqactive=${$.sqactive}&tk=`
   } else {
-    body = `task=${task}&signhb_source=${$.signhb_source}&ispp=1&tk=`
+    functionId = 'signhb/dotask'
+    body = `task=${task}&signhb_source=${$.signhb_source}&ispp=0&sqactive=&tk=`
   }
   return new Promise((resolve) => {
-    $.get(taskUrl("signhb/dotask", body), async (err, resp, data) => {
+    $.get(taskUrl(functionId, body), async (err, resp, data) => {
         try {
           if (err) {
             console.log(JSON.stringify(err));
@@ -353,14 +366,16 @@ function dotask(task) {
 
 // 宝箱
 function bxdraw() {
-  let body;
+  let functionId, body;
   if ($.signhb_source === '5') {
+    functionId = "signhb/bxdraw_jxpp"
     body = `ispp=1&sqactive=${$.sqactive}&tk=`
   } else {
-    body = `ispp=1&tk=`
+    functionId = "signhb/bxdraw"
+    body = `ispp=0&sqactive=&tk=`
   }
   return new Promise((resolve) => {
-    $.get(taskUrl("signhb/bxdraw", body), async (err, resp, data) => {
+    $.get(taskUrl(functionId, body), async (err, resp, data) => {
       try {
         if (err) {
           console.log(JSON.stringify(err));
@@ -457,7 +472,7 @@ function taskUrl(functionId, body = '') {
       "User-Agent": UA,
       "Accept-Language": "zh-CN,zh-Hans;q=0.9",
       "Referer": "https://st.jingxi.com/",
-      "Cookie": cookie
+      "Cookie": `cid=4;${cookie}`
     }
   }
 }
@@ -473,7 +488,7 @@ function JDtaskUrl(functionId, body = '') {
       "User-Agent": $.isNode() ? (process.env.JD_USER_AGENT ? process.env.JD_USER_AGENT : (require('./USER_AGENTS').USER_AGENT)) : ($.getdata('JDUA') ? $.getdata('JDUA') : "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"),
       "Accept-Language": "zh-CN,zh-Hans;q=0.9",
       "Referer": "https://wqs.jd.com/",
-      "Cookie": cookie
+      "Cookie": `cid=4;${cookie}`
     }
   }
 }
